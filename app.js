@@ -3,12 +3,14 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var quiensoyRouter = require('./routes/quiensoy');//quiensoy.js
 var serviciosRouter = require('./routes/servicios');//servicios.js
 var contactoRouter = require('./routes/contacto');//contacto.js
+var adminRouter = require('./routes/admin');//admin.js
 
 var app = express();
 
@@ -22,19 +24,57 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+  secret: 'jsdfhjwiehfdsfsdfsfdsfsdiwa',
+  resave: false,
+  saveUninitialized: true
+}));
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/quiensoy', quiensoyRouter); 
-app.use('/servicios', serviciosRouter); 
+app.use('/quiensoy', quiensoyRouter);
+app.use('/servicios', serviciosRouter);
 app.use('/contacto', contactoRouter);
+/*app.use('/admin', adminRouter);*/
+
+
+app.get('/admin', function (req, res) {
+  var conocido = Boolean(req.session.nombre);
+  res.render('admin', {
+    title: 'Sesiones en Express.js',
+    conocido: conocido,
+    nombre: req.session.nombre
+  });
+});
+
+app.post('/ingresar', function (req, res) {
+  if (req.body.nombre) {
+    req.session.nombre = req.body.nombre
+  }
+  res.redirect('/');
+});
+
+app.get('/salir', function (req, res) {
+  req.session.destroy();
+  res.redirect('/');
+});
+
+
+/*app.get('/', function(req,res){
+  if (req.session.nombre){
+    res.send('Hola ' + req.session.nombre);
+  } else {
+    res.send('Hola usuario desconocido');
+  }
+});*/
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
