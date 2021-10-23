@@ -5,6 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 
+require('dotenv').config();
+var pool = require('./models/bd');
+
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var quiensoyRouter = require('./routes/quiensoy');//quiensoy.js
@@ -36,6 +40,19 @@ app.use('/quiensoy', quiensoyRouter);
 app.use('/servicios', serviciosRouter);
 app.use('/contacto', contactoRouter);
 /*app.use('/admin', adminRouter);*/
+
+//select
+pool.query("select * from empleados").then(function(resultados){
+  console.log(resultados);
+});
+
+pool.query("select nombre from empleados where trabajo='Programador' or trabajo='Desarrollador Web'").then(function(resultados){
+  console.log(resultados);
+});
+
+pool.query("select nombre, apellido from empleados where apellido like 'S%'").then(function(resultados){
+  console.log(resultados);
+});
 
 
 app.get('/admin', function (req, res) {
